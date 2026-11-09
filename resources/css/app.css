@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+@theme {
+    --color-krim: #F6F1E3;
+    --color-espresso: #2B1A10;
+    --color-karamel: #B8863A;
+    --color-mentega: #F6E7B4;
+    --color-merah-bata: #A63C3C;
+    --color-hijau-zaitun: #5B7040;
+    --color-teks-sekunder: #6B5645;
+    --color-teks-aksen: #8A5F1E;
+    --color-karamel-hover: #C69443;
+}
