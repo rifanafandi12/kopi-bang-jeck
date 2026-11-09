@@ -4,13 +4,15 @@ namespace App\Livewire\Customer;
 
 use App\Models\CafeTable;
 use App\Models\Order;
+use App\Enums\OrderStatus;
 use Livewire\Component;
-use Livewire\Attributes\Polling;
+use Livewire\Attributes\On;
 
 class OrderStatusPage extends Component
 {
     public CafeTable $table;
     public Order $order;
+    public bool $showSuccessPopup = false;
 
     public function mount(string $token): void
     {
@@ -25,16 +27,19 @@ class OrderStatusPage extends Component
             ->firstOrFail();
     }
 
-    // Livewire 4 mendukung polling untuk realtime tanpa WebSocket (sebagai fallback)
-    public function render()
+    // Listener untuk WebSocket
+    #[On('refresh-status')]
+    public function refreshStatus()
     {
-        // Refresh data order setiap polling
         $this->order->refresh();
 
-        return view('livewire.customer.order-status-page')->layout('layouts.customer');
+        // Jika status berubah jadi Siap atau Selesai, munculkan popup
+        if ($this->order->status === OrderStatus::Siap || $this->order->status === OrderStatus::Selesai) {
+            $this->showSuccessPopup = true;
+        }
     }
 
-        public function pesanLagi()
+    public function pesanLagi()
     {
         // Simpan data pelanggan lama
         $nama = $this->order->nama;
@@ -73,6 +78,12 @@ class OrderStatusPage extends Component
         do {
             $kode = strtoupper(\Illuminate\Support\Str::random(6));
         } while (\App\Models\Order::where('kode', $kode)->exists());
+
         return $kode;
+    }
+
+    public function render()
+    {
+        return view('livewire.customer.order-status-page')->layout('layouts.customer');
     }
 }

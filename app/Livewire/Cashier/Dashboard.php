@@ -6,10 +6,13 @@ use App\Actions\TransitionOrderStatus;
 use App\Enums\EventActor;
 use App\Enums\OrderEventType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Services\OrderEventRecorder;
+use App\Events\OrderStatusUpdated;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout('layouts::app')]
@@ -43,22 +46,23 @@ class Dashboard extends Component
 
         try {
             $transition->handle($order, $status, EventActor::Kasir);
+
+            // PICUL EVENT KE PELANGGAN
+            OrderStatusUpdated::dispatch($order->refresh());
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->addError('transition', $e->getMessage());
         }
     }
-
-    // === Modal Pembayaran Tunai ===
 
     public function openPayment(int $orderId): void
     {
         $this->resetErrorBag();
         $this->bayarOrderId = $orderId;
         $order = Order::findOrFail($orderId);
-        // Format awal dengan titik
         $this->uangDiterima = number_format($order->total, 0, ',', '.');
         $this->kembalian = null;
     }
+
     public function tutupModal(): void
     {
         $this->bayarOrderId = null;
@@ -68,10 +72,8 @@ class Dashboard extends Component
 
     public function updatedUangDiterima($value)
     {
-        // 1. Hapus semua karakter selain angka
         $clean = preg_replace('/[^0-9]/', '', $value);
 
-        // 2. Format ulang dengan titik
         if ($clean !== '') {
             $this->uangDiterima = number_format((int) $clean, 0, ',', '.');
         } else {
@@ -85,9 +87,7 @@ class Dashboard extends Component
             return;
         }
 
-        // Bersihkan titik untuk mendapatkan nilai integer
         $nominalBersih = (int) str_replace('.', '', $this->uangDiterima);
-
         $order = Order::findOrFail($this->bayarOrderId);
 
         if ($nominalBersih < $order->total) {
@@ -98,7 +98,6 @@ class Dashboard extends Component
         $order->update(['status_bayar' => PaymentStatus::Lunas]);
         $this->kembalian = $nominalBersih - $order->total;
 
-        // Simpan nominal bersih ke database/event
         $recorder->record(
             $order,
             OrderEventType::PaymentPaid,
@@ -114,6 +113,12 @@ class Dashboard extends Component
             $order->update(['status' => OrderStatus::Diterima]);
             $recorder->record($order, OrderEventType::AcceptedByCashier, EventActor::Kasir, ['via' => 'bayar_tunai']);
         }
+    }
+
+    #[On('refresh-orders')]
+    public function refreshOrders()
+    {
+        // Method kosong untuk memicu render ulang saat ada notifikasi WebSocket
     }
 
     public function render()

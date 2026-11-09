@@ -10,6 +10,7 @@ use App\Models\CafeTable;
 use App\Models\Order;
 use App\Services\OrderEventRecorder;
 use Livewire\Component;
+use App\Events\OrderPlaced;
 
 class OrderConfirm extends Component
 {
@@ -53,6 +54,8 @@ class OrderConfirm extends Component
             EventActor::Pelanggan,
             ['metode' => $this->metode]
         );
+        // Picu event ke kasir
+        OrderPlaced::dispatch($this->order);
 
         return $this->redirectRoute('customer.status', ['token' => $this->table->token]);
     }

@@ -299,4 +299,25 @@
             }
         }
     </style>
+
+    {{-- Script Real-time Notifikasi --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.Echo !== 'undefined') {
+            window.Echo.channel('kasir')
+                .listen('OrderPlaced', (e) => {
+                    console.log('Pesanan baru masuk!', e);
+
+                    // 1. Mainkan suara notifikasi
+                    let audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                    audio.play().catch(err => console.log('Audio diblokir browser, klik layar dulu.'));
+
+                    // 2. Segarkan data Livewire tanpa reload halaman
+                    Livewire.dispatch('refresh-orders');
+                });
+        } else {
+            console.error('Echo belum terkonfigurasi.');
+        }
+    });
+</script>
 </div>
