@@ -1,5 +1,21 @@
 @import 'tailwindcss';
+@font-face {
+    font-family: 'Fraunces';
+    src: url('../fonts/Fraunces-VariableFont.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
 
+@font-face {
+    font-family: 'Instrument Sans';
+    src: url('../fonts/InstrumentSans-VariableFont.ttf') format('truetype');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@import 'tailwindcss';
 @theme {
     --color-krim: #F6F1E3;
     --color-espresso: #2B1A10;
@@ -10,4 +26,7 @@
     --color-teks-sekunder: #6B5645;
     --color-teks-aksen: #8A5F1E;
     --color-karamel-hover: #C69443;
+
+    --font-serif: 'Fraunces', serif;
+    --font-sans: 'Instrument Sans', sans-serif;
 }
